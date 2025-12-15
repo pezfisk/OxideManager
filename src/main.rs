@@ -139,7 +139,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                                                                     e
                                                                 );
                                                                 let error = format!("Error: {}", e);
-                                                                ui.set_footer(SharedString::from(error));
+                                                                ui.set_footer(SharedString::from(&error));
+                                                                println!("{}", error);
                                                             }
                                                         }
                                                     }
@@ -147,11 +148,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                                             }
 
                                             {
-                                                let mut log_file = if let Ok(file) = fs::File::create(&log_path) {
-                                                    file
-                                                } else {
-                                                    eprintln!("Failed to create log file '{}'", log_path.display());
+                                                let Ok(_) = fs::create_dir_all(&extract_to_data_dir) else {
+                                                    eprintln!("Cant create dir");
                                                     return;
+                                                };
+                                                let mut log_file = match fs::File::create(&log_path) {
+                                                    Ok(file) => file,
+                                                    Err(e) => {
+                                                        println!("Error: {}", e);
+                                                        return;
+                                                    }
                                                 };
 
                                                 match log_file.write_all(
