@@ -17,8 +17,7 @@ pub fn copy_to_dir(
     let mut walk_dir = PathBuf::new();
     match data_dir() {
         Some(path) => {
-            let profile_slash = PathBuf::from(format!("{}/", profile.display()));
-            walk_dir = path.join(profile_slash).join("extracted").join(start_point);
+            walk_dir = path.join(profile).join("extracted").join(start_point);
         }
         None => {
             eprintln!("Failed to get home directory");
@@ -29,7 +28,8 @@ pub fn copy_to_dir(
         walk_dir.display(),
         copy_to
     );
-    for entry_result in fs::read_dir(&*walk_dir)? {
+    for entry_result in fs::read_dir(&*walk_dir).unwrap() {
+        println!("HOLAA");
         let entry = entry_result?;
         let src_path = entry.path();
         let filename = entry.file_name();
@@ -77,9 +77,10 @@ pub fn copy_to_dir(
                     Some(x) => x,
                     None => {
                         println!("Failed to split path: {}", dst_path.display());
-                        continue
+                        continue;
                     }
                 };
+
                 println!(
                     "Backing up file: '{}' -> '{}'",
                     dst_path.display(),
@@ -160,7 +161,7 @@ pub fn restore(profile: &Path) -> Result<(), Box<dyn Error>> {
         None => {
             println!("Failed to get profile name");
             return Err("Failed to get profile name".into());
-        },
+        }
     };
 
     println!("Restoring files from backup");
@@ -173,7 +174,7 @@ pub fn restore(profile: &Path) -> Result<(), Box<dyn Error>> {
 
         println!("Restoring file: '{}' -> '{}'", temp_dir.display(), path);
 
-        fs::rename(&temp_dir, PathBuf::from(path))?;
+        fs::rename(&temp_dir, PathBuf::from(path)).unwrap();
     }
 
     println!("Removing symlinks");
@@ -204,17 +205,7 @@ fn split_path(path: &Path, profile: &Path) -> Option<PathBuf> {
         None => return None,
     };
 
-    let path_dir = data_dir().unwrap_or_else(|| {
-        println!("Failed to get data directory (split_path)");
-        PathBuf::new()
-    });
-
-    let complete_path = PathBuf::from(format!(
-        "{}/{}bak{}",
-        path_dir.display(),
-        profile.display(),
-        where_to
-    ));
+    let complete_path = PathBuf::from(format!("{}bak{}", profile.display(), where_to));
 
     Some(complete_path)
 }

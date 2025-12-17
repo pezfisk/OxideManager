@@ -27,6 +27,7 @@
             pkg-config
             rust-analyzer
             lldb_20
+            slint-lsp
           ];
           RUST_SRC_PATH = rustPlatform.rustLibSrc;
 

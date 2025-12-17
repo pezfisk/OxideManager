@@ -261,9 +261,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         let ui_copy = Arc::clone(&ui);
 
         ui.on_restore(move |name| {
-            let ini = match Ini::load_from_file(PathBuf::from(format!("profiles/{}.ini", name))) {
+            println!("Trying to restore {}", name);
+            let data_dir = data_dir().unwrap_or_else(|| {
+                println!("Failed to get data directory");
+                PathBuf::new()
+            });
+
+            let profile = {
+                let mut path = data_dir;
+                let profile_path = PathBuf::from(format!("oxide/profiles/{}.ini", name));
+                path.push(profile_path);
+                path
+            };
+            let ini = match Ini::load_from_file(profile) {
                 Ok(ini) => ini,
                 Err(e) => {
+                    println!("Error: {}", e);
                     ui_copy.set_footer(SharedString::from(format!("Error: {}", e)));
                     return;
                 }
