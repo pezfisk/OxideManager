@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>dev.invrs.oxide</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Oxide</name>
+  <summary>Blazing fast Modding tool for Linux built with Rust</summary>
+  
+  <description>
+    <p>
+      Oxide is a fast and efficient modding tool designed specifically 
+      for Linux gamers. Built with Rust, it provides a streamlined interface 
+      for managing game modifications.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">dev.invrs.oxide.desktop</launchable>
+  
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/pezfisk/OxideManager/master/assets/program.png</image>
+      <caption>Main window</caption>
+    </screenshot>
+  </screenshots>
+  
+  <url type="homepage">https://invrs.dev</url>
+  <url type="bugtracker">https://github.com/pezfisk/OxideManager/issues</url>
+  
+  <developer_name>Marco Rodriguez</developer_name>
+  
+  <releases>
+    <release version="0.5.0" date="2025-12-17"/>
+  </releases>
+  
+  <content_rating type="oars-1.1" />
+  
+  <categories>
+    <category>Game</category>
+    <category>Utility</category>
+  </categories>
+</component>
+

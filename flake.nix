@@ -29,6 +29,7 @@
             lldb_20
             slint-lsp
             flatpak-builder
+            appstream
           ];
           RUST_SRC_PATH = rustPlatform.rustLibSrc;
 

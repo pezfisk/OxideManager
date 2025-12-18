@@ -7,3 +7,5 @@
 nohup.out
 .direnv
 .flatpak-builder
+build-dir
+cargo-sources.json
