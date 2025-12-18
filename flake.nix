@@ -28,6 +28,7 @@
             rust-analyzer
             lldb_20
             slint-lsp
+            flatpak-builder
           ];
           RUST_SRC_PATH = rustPlatform.rustLibSrc;
 
