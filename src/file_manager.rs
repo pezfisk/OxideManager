@@ -2,7 +2,7 @@ use dirs::data_dir;
 use std::{
     error::Error,
     fs::{self, OpenOptions},
-    io::prelude::*,
+    io::{prelude::*, ErrorKind},
     path::{Path, PathBuf},
 };
 
@@ -171,10 +171,21 @@ pub fn restore(profile: &Path) -> Result<(), Box<dyn Error>> {
             None => continue,
         };
         let temp_dir = PathBuf::from(format!("{}bak{}", profile.display(), copy_bak_to.display()));
+        let path = PathBuf::from(path);
+        println!(
+            "Restoring file: '{}' -> '{}'",
+            temp_dir.display(),
+            path.display()
+        );
 
-        println!("Restoring file: '{}' -> '{}'", temp_dir.display(), path);
-
-        fs::rename(&temp_dir, PathBuf::from(path)).unwrap();
+        match fs::rename(&temp_dir, &path) {
+            Ok(_) => {}
+            Err(e) if e.kind() == ErrorKind::CrossesDevices => {
+                fs::copy(&temp_dir, path)?;
+                fs::remove_file(temp_dir)?;
+            }
+            Err(e) => return Err(Box::new(e)),
+        }
     }
 
     println!("Removing symlinks");
@@ -217,7 +228,15 @@ fn create_bak(src: &PathBuf, dst: &PathBuf) -> Result<(), Box<dyn Error>> {
         }
     }
 
-    fs::rename(src, dst)?;
+    match fs::rename(src, dst) {
+        Ok(_) => {}
+        Err(e) if e.kind() == ErrorKind::CrossesDevices => {
+            fs::copy(src, dst)?;
+            fs::remove_file(src)?;
+        }
+        Err(e) => return Err(Box::new(e)),
+    }
+
     println!("src: {}, dst: {}", src.display(), dst.display());
 
     Ok(())

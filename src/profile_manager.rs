@@ -172,8 +172,14 @@ fn load_cover_image(path: String, title: String) -> Result<Image, Box<dyn Error>
         }
     }
 
+    let notfound_path = if std::env::var("FLATPAK_ID").is_ok() {
+        "/app/share/oxide/notfound.png"
+    } else {
+        "notfound.png"
+    };
+
     println!("Falling back to notfound.png");
-    if let Ok(image) = slint::Image::load_from_path(&PathBuf::from("notfound.png")) {
+    if let Ok(image) = slint::Image::load_from_path(&PathBuf::from(notfound_path)) {
         Ok(image)
     } else {
         Err("Failed to load image".into())
