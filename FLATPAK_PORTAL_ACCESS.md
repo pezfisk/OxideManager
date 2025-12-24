@@ -12,11 +12,12 @@ Replaced `rfd` with `ashpd` (Async Handler for Portal Desktop), which properly i
 
 2. **src/main.rs**: 
    - Added `ashpd::desktop::file_chooser::OpenFileRequest` import
+   - Created a persistent Tokio runtime wrapped in `Arc` that lives for the entire application (required by ashpd/zbus)
    - Created `pick_directory_persistent()` async function that:
      - Uses `OpenFileRequest` with `directory(true)` for folder selection
      - Returns paths from file:// URIs
      - Automatically grants persistent access through the portal
-   - Updated both `on_request_archive_path` and `on_request_game_path` callbacks to use the new portal-based picker
+   - Updated both `on_request_archive_path` and `on_request_game_path` callbacks to use the new portal-based picker with the shared runtime
 
 3. **dev.invrs.oxide.yaml**: 
    - Removed `--filesystem=home` finish-arg
@@ -42,5 +43,10 @@ When the user selects a directory through `OpenFileRequest`:
 3. Portal grants the app persistent access to that directory
 4. Access is stored in the portal's permission store
 5. Subsequent app launches can access the same directory without re-prompting
+
+### Important Implementation Notes
+
+- **Tokio Runtime**: `ashpd` uses `zbus` internally, which requires a Tokio runtime context. The application creates a persistent `Arc<Runtime>` at startup that lives for the entire app lifetime and is shared across all callbacks.
+- **Async/Sync Bridge**: The `block_on()` method is used to bridge the async portal calls with the synchronous Slint UI callbacks.
 
 This is the recommended approach for Flatpak applications that need persistent file/directory access.

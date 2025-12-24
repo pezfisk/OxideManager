@@ -38,6 +38,10 @@ async fn pick_directory_persistent(title: &str) -> Result<Option<PathBuf>, ashpd
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // Create a Tokio runtime that will live for the entire application
+    // This is required for ashpd/zbus to function properly
+    let rt = Arc::new(Runtime::new()?);
+
     let window = AppWindow::new()?;
     let ui = Arc::new(window);
 
@@ -49,18 +53,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     {
         let ui_copy = Arc::clone(&ui);
+        let rt_copy = Arc::clone(&rt);
 
         ui.on_request_archive_path(move || {
             let ui_inner = ui_copy.clone();
-            let rt = match Runtime::new() {
-                Ok(rt) => rt,
-                Err(e) => {
-                    println!("Failed to create runtime: {}", e);
-                    return;
-                }
-            };
 
-            if let Ok(Some(path)) = rt.block_on(pick_directory_persistent("Select Archive Folder"))
+            if let Ok(Some(path)) =
+                rt_copy.block_on(pick_directory_persistent("Select Archive Folder"))
             {
                 if let Some(path_str) = path.to_str() {
                     ui_inner.set_archive_path(SharedString::from(path_str));
@@ -71,18 +70,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     {
         let ui_copy = Arc::clone(&ui);
+        let rt_copy = Arc::clone(&rt);
 
         ui.on_request_game_path(move || {
             let ui_inner = ui_copy.clone();
-            let rt = match Runtime::new() {
-                Ok(rt) => rt,
-                Err(e) => {
-                    println!("Failed to create runtime: {}", e);
-                    return;
-                }
-            };
 
-            if let Ok(Some(path)) = rt.block_on(pick_directory_persistent("Select Game Folder")) {
+            if let Ok(Some(path)) =
+                rt_copy.block_on(pick_directory_persistent("Select Game Folder"))
+            {
                 if let Some(path_str) = path.to_str() {
                     ui_inner.set_game_path(SharedString::from(path_str));
                 }
