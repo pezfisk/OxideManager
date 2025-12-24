@@ -1,8 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 slint::include_modules!();
+use ashpd::desktop::file_chooser::OpenFileRequest;
 use dirs::data_dir;
 use ini::Ini;
-use rfd::FileDialog;
 use slint::{ComponentHandle, SharedString};
 use std::{
     env,
@@ -18,6 +18,25 @@ mod extract;
 mod file_manager;
 mod profile_manager;
 
+/// Pick a directory with persistent access using xdg-desktop-portal
+async fn pick_directory_persistent(title: &str) -> Result<Option<PathBuf>, ashpd::Error> {
+    let request = OpenFileRequest::default()
+        .title(title)
+        .directory(true)
+        .modal(true);
+
+    let files = request.send().await?.response()?;
+
+    if let Some(uri) = files.uris().first() {
+        // Convert file:// URI to path
+        if let Ok(path) = uri.to_file_path() {
+            return Ok(Some(path));
+        }
+    }
+
+    Ok(None)
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let window = AppWindow::new()?;
     let ui = Arc::new(window);
@@ -29,16 +48,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let archive_path = Rc::new(RefCell::new(PathBuf::new()));
 
     {
-        // let archive_path = archive_path.clone();
-        // let extract_to = extract_to.clone();
         let ui_copy = Arc::clone(&ui);
 
         ui.on_request_archive_path(move || {
-            if let Some(path) = FileDialog::new().pick_folder() {
-                if let Some(path_str) = path.to_str() {
-                    ui_copy.set_archive_path(SharedString::from(path_str));
+            let ui_inner = ui_copy.clone();
+            let rt = match Runtime::new() {
+                Ok(rt) => rt,
+                Err(e) => {
+                    println!("Failed to create runtime: {}", e);
+                    return;
                 }
-                // *archive_path.borrow_mut() = path;
+            };
+
+            if let Ok(Some(path)) = rt.block_on(pick_directory_persistent("Select Archive Folder"))
+            {
+                if let Some(path_str) = path.to_str() {
+                    ui_inner.set_archive_path(SharedString::from(path_str));
+                }
             }
         });
     }
@@ -47,9 +73,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         let ui_copy = Arc::clone(&ui);
 
         ui.on_request_game_path(move || {
-            if let Some(path) = FileDialog::new().pick_folder() {
+            let ui_inner = ui_copy.clone();
+            let rt = match Runtime::new() {
+                Ok(rt) => rt,
+                Err(e) => {
+                    println!("Failed to create runtime: {}", e);
+                    return;
+                }
+            };
+
+            if let Ok(Some(path)) = rt.block_on(pick_directory_persistent("Select Game Folder")) {
                 if let Some(path_str) = path.to_str() {
-                    ui_copy.set_game_path(SharedString::from(path_str));
+                    ui_inner.set_game_path(SharedString::from(path_str));
                 }
             }
         });

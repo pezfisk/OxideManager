@@ -2,7 +2,7 @@ use dirs::data_dir;
 use std::{
     error::Error,
     fs::{self, OpenOptions},
-    io::{prelude::*, ErrorKind},
+    io::{ErrorKind, prelude::*},
     path::{Path, PathBuf},
 };
 
