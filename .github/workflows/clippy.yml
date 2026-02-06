@@ -1,0 +1,34 @@
+name: Clippy check
+
+on: push
+
+jobs:
+  clippy_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.1
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            qt6-base-dev \
+            libqt6gui6 \
+            libqt6widgets6 \
+            libgl1-mesa-dev \
+            libxkbcommon-x11-dev \
+            libpam0g-dev \
+            libfontconfig-dev \
+            libwayland-dev \
+            pkg-config \
+            upx-ucl
+      
+      - uses: actions-rust-lang/setup-rust-toolchain@v1.15.2
+        with:
+          toolchain: nightly
+          components: clippy
+      
+      - uses: clechasseur/rs-clippy-check@v5.0.2
+        with:
+          args: --all-features
+
