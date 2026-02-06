@@ -212,7 +212,7 @@ pub async fn download_image(
     profile: &PathBuf,
 ) -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
-    let client_key = env::var("STEAMGRIDDB_API_KEY").expect("STEAMGRIDDB_API_KEY not set");
+    let client_key = env::var("STEAMGRIDDB_API_KEY")?;
     let client = Client::new(client_key);
     let games = client.search(title).await?;
     let first_game = games.iter().next().ok_or("No games found")?;

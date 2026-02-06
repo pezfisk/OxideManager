@@ -1,7 +1,7 @@
 import { StandardButton, Button, VerticalBox, LineEdit, Switch, GroupBox, ProgressIndicator, TextEdit, StyleMetrics, Palette, ScrollView } from "std-widgets.slint";
 import { ProfileTile, ProfileData } from "profile-images.slint";
 import { ProfileState } from "profile-state.slint";
-import { GridView } from "grid_view.slint";
+// import { GridView } from "grid_view.slint";
 import { EditWindow, SearchResults } from "profile-edit.slint";
 
 export component AppWindow inherits Window {
@@ -225,29 +225,32 @@ export component AppWindow inherits Window {
             }
         }
         // END OF FIRST TAB -------------------------------------------------
-        if(tab_index == 1): view := GridView {
-            // SECOND TAB -------------------------------------------------------------------
-            viewport-height: Math.round(profiles.length / self.columns) * view.preferredCellHeight * 1.5px;
+        if(tab_index == 1): Flickable {
             viewport-width: self.width;
+            viewport-height: max(self.height, grid.preferred-height);
+    
+            grid := GridLayout {
+                padding: 10px;
+                spacing: 10px;
+        
+                for profile[index] in root.profiles: ProfileTile {
+                    col: Math.mod(index, max(1, floor(root.width / 250px)));
+                    row: floor(index / max(1, floor(root.width / 250px)));
+            
+                    cover-image: profile.cover_image;
+                    title: profile.title;
+                    year: profile.year;
+                    path_to_profile: profile.path_to_profile;
+                    temp_path: profile.temp_path;
 
-            for profile[index] in root.profiles: ProfileTile {
-                width: view.expectedWidth * 1px;
-                height: view.preferredCellHeight * 1px;
-                x: (Math.mod(index, view.columns)) * self.width;
-                y: Math.floor(index / view.columns) * self.height;
-                cover-image: profile.cover_image;
-                title: profile.title;
-                year: profile.year;
-                path_to_profile: profile.path_to_profile;
-                temp_path: profile.temp_path;
-
-                open_game(temp_path) => {
-                    root.selected_cover_image = ProfileState.cover_image;
-                    root.selected_title = ProfileState.title;
-                    root.selected_year = ProfileState.year;
-                    root.selected_path_to_profile = ProfileState.path_to_profile;
-                    root.selected_temp_path = temp_path;
-                    root.tab_index = 2;
+                    open_game(temp_path) => {
+                        root.selected_cover_image = ProfileState.cover_image;
+                        root.selected_title = ProfileState.title;
+                        root.selected_year = ProfileState.year;
+                        root.selected_path_to_profile = ProfileState.path_to_profile;
+                        root.selected_temp_path = temp_path;
+                        root.tab_index = 2;
+                    }
                 }
             }
         }
